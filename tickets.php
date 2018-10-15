@@ -16,6 +16,7 @@ global $woocommerce;
 $is_there_any_product         = false;
 $is_there_any_product_to_sell = false;
 $unavailability_messaging     = is_callable( array( $this, 'do_not_show_tickets_unavailable_message' ) );
+$product_id_for_template      = 0;
 
 if ( ! empty( $tickets ) ) {
 	$tickets = tribe( 'tickets.handler' )->sort_tickets_by_menu_order( $tickets );
@@ -32,6 +33,7 @@ ob_start();
  */
 $cart_classes = (array) apply_filters( 'tribe_events_tickets_woo_cart_class', array( 'cart' ) );
 ?>
+
 <form
 	id="buy-tickets"
 	action="<?php echo esc_url( wc_get_cart_url() ) ?>"
@@ -70,11 +72,12 @@ $cart_classes = (array) apply_filters( 'tribe_events_tickets_woo_cart_class', ar
 				$product = new WC_Product( $ticket->ID );
 			}
 
-			$data_product_id      = '';
+			$data_product_id = '';
 
 			if ( $ticket->date_in_range() ) {
 
-				$is_there_any_product = true;
+				$is_there_any_product    = true;
+				$product_id_for_template = $ticket->ID;
 
 				echo sprintf( '<input type="hidden" name="product_id[]" value="%d">', esc_attr( $ticket->ID ) );
 
@@ -124,7 +127,7 @@ $cart_classes = (array) apply_filters( 'tribe_events_tickets_woo_cart_class', ar
 					$available    = $ticket->available();
 
 					$input = woocommerce_quantity_input( array(
-						'input_name'  => 'quantity_' . $ticket->ID,
+						'input_name'  => 'quantity',
 						'input_value' => 0,
 						'min_value'   => 0,
 						'max_value'   => $max_quantity,
@@ -213,8 +216,8 @@ $cart_classes = (array) apply_filters( 'tribe_events_tickets_woo_cart_class', ar
 						<button
 							type="submit"
 							name="wootickets_process"
-							value="1"
-							class="tribe-button"
+							value="<?php echo esc_attr( $product_id_for_template ); ?>"
+							class="tribe-button button"
 						>
 							<?php esc_html_e( 'Add to cart', 'event-tickets-plus' );?>
 						</button>
